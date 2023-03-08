@@ -1,3 +1,29 @@
+# v1.6.16
+**Mod Support:**
+
+* Fixed compatibility issues with Simple Repaint
+* Fixed mass of Recycler for EPL
+
+# v1.6.15
+**General:**
+
+* Recompile for KSP 1.12.3
+* Updated KSPModFileLocalizer to version 0.2.3.8
+
+**Mod Support:**
+
+* Fixed/Updated mod support for Kerbalism. Thanks to [Grimmas](https://forum.kerbalspaceprogram.com/index.php?/profile/207818-grimmas/)
+* Fixed confused storage capacity of K&K Storage and K&K Storage (small), part in flight remain unchanged
+
+**Bug Fixes:**
+
+* Fixed garage adapter and garage cover not clickable in VAB/SPH
+
+# v1.6.14
+**Enhancements:**
+
+* Added support for inventory and construction features from KSP 1.11 (this time really)
+
 # v1.6.13
 **General:**
 

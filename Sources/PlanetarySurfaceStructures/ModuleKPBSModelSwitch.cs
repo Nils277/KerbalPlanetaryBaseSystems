@@ -19,10 +19,13 @@ namespace PlanetarySurfaceStructures
         [KSPField(isPersistant = true, guiActiveEditor = true, guiActive = false, guiName = "#LOC_KPBS.modelswitch.model")]
         [UI_ChooseOption(scene = UI_Scene.Editor)]
         public int numModel = 0;
+
+
+        //The previous model index
         private int oldModelNum = -1;
 
-        //the list of models
-        List<ModelTransforms> models;
+        //The list of transforms
+        private List<List<Transform>> transformsData;
 
         List<string> visibleNames;
 
@@ -41,46 +44,53 @@ namespace PlanetarySurfaceStructures
 
             string[] transformGroupNames = transformNames.Split(',');
             string[] transformGroupVisibleNames = transformVisibleNames.Split(',');
-            models = new List<ModelTransforms>();
-            visibleNames = new List<string>();
 
-            //----------------------------------------------------------
-            //create the list of transforms to be made switchable
-            //----------------------------------------------------------
-            for (int k = 0; k < transformGroupNames.Length; k++)
+            transformsData = new List<List<Transform>>();
+
+            //Search in the named transforms for the lights
+            if (transformNames != string.Empty)
             {
-                name = transformGroupNames[k].Trim();
+                string[] transforms = transformNames.Split(',');
 
-                List<Transform> transforms = new List<Transform>();
-                transforms.AddRange(part.FindModelTransforms(name));
+                //find all the transforms
+                List<Transform> transformsList = new List<Transform>();
 
-                ModelTransforms mt = new ModelTransforms();
-                mt.transforms = new List<Transform>();
-                mt.transforms.AddRange(transforms);
+                for (int i = 0; i < transforms.Length; i++)
+                {
+                    List<Transform> transSetting = new List<Transform>();
+                    //get all the transforms
+                    transSetting.AddRange(part.FindModelTransforms(transforms[i].Trim()));
 
-                models.Add(mt);
-                if (transformGroupVisibleNames.Length == transformGroupNames.Length) {
-                    visibleNames.Add(transformGroupVisibleNames[k]);
+                    transformsData.Add(transSetting);
+                }
+
+                string[] visible = transformVisibleNames.Split(',');
+                for (int i = 0; i < visible.Length; i++)
+                {
+                    visible[i] = visible[i].Trim();
+                }
+
+                if (visible.Length == transforms.Length)
+                {
+                    modelUIChooser.options = visible;
                 }
                 else
                 {
-                    visibleNames.Add(transformGroupNames[k]);
+                    //set the changes for the modelchooser
+                    modelUIChooser.options = transforms;
                 }
 
-
+                //when there is only one model, we do not need to show the controls
+                if (transformNames.Length < 2)
+                {
+                    modelBaseField.guiActive = false;
+                    modelBaseField.guiActiveEditor = false;
+                }
             }
-
-            //set the changes for the modelchooser
-            modelUIChooser.options = visibleNames.ToArray();
-
-            //when there is only one model, we do not need to show the controls
-            if (models.Count < 2)
+            else
             {
-                modelBaseField.guiActive = false;
-                modelBaseField.guiActiveEditor = false;
+                Debug.LogError("ModuleKPBSModelSwitch: No transforms defined!)");
             }
-
-            updateActiveModel();
         }
 
         /**
@@ -88,28 +98,27 @@ namespace PlanetarySurfaceStructures
          */
         public void Update()
         {
+            //when the active model changes
             if (oldModelNum != numModel)
             {
-                updateActiveModel();
-            }
-        }
-
-        // Update which model are active or inactive
-        private void updateActiveModel()
-        {
-            for (int i = 0; i < models.Count; i++)
-            {
-                for (int j = 0; j < models[i].transforms.Count; j++)
+                for (int i = 0; i < transformsData.Count; i++)
                 {
                     if (i == numModel)
                     {
-                        models[i].transforms[j].gameObject.SetActive(true);
+                        for (int j = 0; j < transformsData[i].Count; j++)
+                        {
+                            transformsData[i][j].gameObject.SetActive(true);
+                        }
                     }
                     else
                     {
-                        models[i].transforms[j].gameObject.SetActive(false);
+                        for (int j = 0; j < transformsData[i].Count; j++)
+                        {
+                            transformsData[i][j].gameObject.SetActive(false);
+                        }
                     }
                 }
+                oldModelNum = numModel;
             }
         }
 
@@ -169,12 +178,6 @@ namespace PlanetarySurfaceStructures
         public string GetPrimaryField()
         {
             return null;
-        }
-
-        // An internal struct that holds the data for the switchable parts
-        private class ModelTransforms
-        {
-            public List<Transform> transforms;
         }
     }
 }
